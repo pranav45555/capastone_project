@@ -1,8 +1,8 @@
 """
 CollideX Dashboard — Main Entry Point
 ========================================
-Uses st.navigation() for URL-based routing so browser
-Back / Forward buttons work natively.
+Professional multi-page Streamlit application.
+Navigation via session_state + importlib (stable across all Streamlit versions).
 
 Run:
     cd cosmicguard/dashboard
@@ -25,12 +25,25 @@ from assets.styles import GLOBAL_CSS
 from components.ui import sidebar_logo
 from config import APP_TITLE, APP_SUBTITLE, APP_ICON
 
+
+# ---------------------------------------------------------------------------
+# Helper — load a page module by file path
+# ---------------------------------------------------------------------------
+def _load_page(rel_path: str):
+    """Dynamically load a page module and call render()."""
+    abs_path = os.path.join(DASHBOARD_DIR, rel_path)
+    spec     = importlib.util.spec_from_file_location("_page_module", abs_path)
+    mod      = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 # ---------------------------------------------------------------------------
 # Page Config — MUST be the first Streamlit call
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title=f"{APP_TITLE} — Space Debris Collision Prediction",
-    page_icon=APP_ICON,
+    page_icon="🛸",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
@@ -41,49 +54,48 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Inject Global CSS + Custom Nav Styling
+# Inject Global CSS + Sidebar Nav Styling
 # ---------------------------------------------------------------------------
 st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
 
-# Make sidebar nav buttons look exactly like the image (link-style, centered)
 st.markdown("""
 <style>
-/* Remove button borders and backgrounds from sidebar nav buttons */
-section[data-testid="stSidebar"] .stButton > button {
+/* Style sidebar nav buttons to look like clean link-style navigation */
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button {
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: 6px !important;
     color: #8BA3C7 !important;
     font-size: 15px !important;
     font-weight: 500 !important;
-    letter-spacing: 0.5px !important;
-    padding: 10px 0px !important;
+    letter-spacing: 0.4px !important;
+    padding: 10px 16px !important;
     width: 100% !important;
-    text-align: center !important;
+    text-align: left !important;
     box-shadow: none !important;
-    transition: color 0.2s ease !important;
-    margin: 2px 0 !important;
+    transition: all 0.2s ease !important;
 }
-section[data-testid="stSidebar"] .stButton > button:hover {
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button:hover {
     color: #00D4FF !important;
-    background: transparent !important;
+    background: rgba(0,212,255,0.07) !important;
     border: none !important;
     box-shadow: none !important;
 }
-/* Active page — highlighted cyan text, no background */
-section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+/* Active page button */
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"] {
     color: #00D4FF !important;
     font-weight: 700 !important;
-    background: transparent !important;
-    border: none !important;
+    background: rgba(0,212,255,0.10) !important;
+    border-left: 3px solid #00D4FF !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
     box-shadow: none !important;
 }
-section[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
-    color: #00D4FF !important;
-    background: transparent !important;
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button[kind="primary"]:hover {
+    background: rgba(0,212,255,0.15) !important;
 }
-/* Remove focus outline */
-section[data-testid="stSidebar"] .stButton > button:focus {
+section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] .stButton > button:focus {
     box-shadow: none !important;
     outline: none !important;
 }
@@ -91,54 +103,25 @@ section[data-testid="stSidebar"] .stButton > button:focus {
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Page Runners — each loads its module and calls render()
+# Navigation Config
 # ---------------------------------------------------------------------------
-def _make_runner(rel_path: str):
-    """Return a callable that loads the page module and calls render()."""
-    def _runner():
-        abs_path = os.path.join(DASHBOARD_DIR, rel_path)
-        spec = importlib.util.spec_from_file_location("_page_module", abs_path)
-        mod  = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        mod.render()
-    return _runner
-
-# ---------------------------------------------------------------------------
-# Define Pages for st.navigation()
-# Each page gets its own URL — browser Back/Forward work natively
-# ---------------------------------------------------------------------------
-NAV_CONFIG = [
-    ("Home",               "pages/1_home.py",             "🏠",  "home"),
-    ("Prediction",         "pages/2_prediction.py",       "⚡",  "prediction"),
-    ("Evaluation",         "pages/3_evaluation.py",       "📊",  "evaluation"),
-    ("Visual Analytics",   "pages/4_visual_analytics.py", "📈",  "visual_analytics"),
-    ("Prediction History", "pages/5_history.py",          "🕐",  "history"),
-    ("Downloads",          "pages/6_downloads.py",        "📥",  "downloads"),
-    ("About",              "pages/7_about.py",            "ℹ️",  "about"),
+NAV_PAGES = [
+    ("Home",               "pages/1_home.py",             "🏠"),
+    ("Prediction",         "pages/2_prediction.py",       "⚡"),
+    ("Evaluation",         "pages/3_evaluation.py",       "📊"),
+    ("Visual Analytics",   "pages/4_visual_analytics.py", "📈"),
+    ("Prediction History", "pages/5_history.py",          "🕐"),
+    ("Downloads",          "pages/6_downloads.py",        "📥"),
+    ("About",              "pages/7_about.py",            "ℹ️"),
 ]
 
-
-nav_pages = [
-    st.Page(
-        _make_runner(path),
-        title=name,
-        icon=icon,
-        url_path=url,
-    )
-    for name, path, icon, url in NAV_CONFIG
-]
-
-# Use st.navigation with position="hidden" so we draw our own sidebar
-pg = st.navigation(nav_pages, position="hidden")
-
 # ---------------------------------------------------------------------------
-# Sidebar — styled exactly like the reference image
+# Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    # Logo / branding
+    # Logo area
     st.markdown(sidebar_logo(), unsafe_allow_html=True)
 
-    # "NAVIGATION" label
     st.markdown("""
     <div style="padding:12px 20px 8px;">
         <div style="font-size:9px;color:#1A3A5C;text-transform:uppercase;
@@ -146,19 +129,24 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # Nav buttons — look like the image (centered link-style)
-    for page in nav_pages:
-        is_active = pg.title == page.title
+    # Default to Home
+    if "current_page" not in st.session_state:
+        st.session_state["current_page"] = "Home"
+
+    # Nav buttons — styled like clean link navigation
+    for page_name, _, icon in NAV_PAGES:
+        is_active = st.session_state["current_page"] == page_name
         btn = st.button(
-            f"{page.icon}  {page.title}",
-            key=f"nav_{page.title}",
+            f"{icon}  {page_name}",
+            key=f"nav_btn_{page_name}",
             use_container_width=True,
             type="primary" if is_active else "secondary",
         )
         if btn:
-            st.switch_page(page)
+            st.session_state["current_page"] = page_name
+            st.rerun()
 
-    # System Status
+    # System Status block
     st.markdown("<br>" * 2, unsafe_allow_html=True)
     st.markdown("""
     <div style="border-top:1px solid #1A3A5C;padding:16px 20px 0;">
@@ -200,6 +188,14 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Run the selected page
+# Page Routing — dynamically load the selected page file
 # ---------------------------------------------------------------------------
-pg.run()
+current = st.session_state.get("current_page", "Home")
+
+page_file = next(
+    (f for name, f, _ in NAV_PAGES if name == current),
+    "pages/1_home.py"
+)
+
+page_mod = _load_page(page_file)
+page_mod.render()
