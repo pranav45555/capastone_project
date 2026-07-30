@@ -97,23 +97,16 @@ with st.sidebar:
         text_c    = "#00D4FF" if is_active else "#8BA3C7"
 
         # Render styled button via HTML label + Streamlit button
-        col_icon, col_btn = st.columns([0.15, 0.85])
-        with col_icon:
-            st.markdown(
-                f'<div style="height:36px;display:flex;align-items:center;'
-                f'justify-content:center;color:{text_c};font-size:14px;">'
-                f'{icon}</div>',
-                unsafe_allow_html=True
-            )
-        with col_btn:
-            btn = st.button(
-                page_name,
-                key=f"nav_btn_{page_name}",
-                width='stretch',
-            )
-            if btn:
-                st.session_state["current_page"] = page_name
-                st.rerun()
+        btn = st.button(
+            f"{icon}  {page_name}",
+            key=f"nav_btn_{page_name}",
+            use_container_width=True,
+            type="primary" if is_active else "secondary",
+        )
+
+        if btn:
+            st.session_state["current_page"] = page_name
+            st.rerun()
 
     # System Status block at bottom of sidebar
     st.markdown("<br>" * 2, unsafe_allow_html=True)
