@@ -1,8 +1,8 @@
 """
 CollideX Dashboard — Main Entry Point
 ========================================
-Professional multi-page Streamlit application.
-All navigation is handled via session_state + importlib.
+Uses st.navigation() for URL-based routing so browser
+Back / Forward buttons work natively.
 
 Run:
     cd cosmicguard/dashboard
@@ -21,23 +21,9 @@ if DASHBOARD_DIR not in sys.path:
     sys.path.insert(0, DASHBOARD_DIR)
 
 import streamlit as st
-
 from assets.styles import GLOBAL_CSS
 from components.ui import sidebar_logo
 from config import APP_TITLE, APP_SUBTITLE, APP_ICON
-
-
-# ---------------------------------------------------------------------------
-# Helper — load a page module by file path
-# ---------------------------------------------------------------------------
-def _load_page(rel_path: str):
-    """Dynamically load a page module and call render()."""
-    abs_path = os.path.join(DASHBOARD_DIR, rel_path)
-    spec     = importlib.util.spec_from_file_location("_page_module", abs_path)
-    mod      = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
 
 # ---------------------------------------------------------------------------
 # Page Config — MUST be the first Streamlit call
@@ -55,60 +41,123 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Inject Global CSS
+# Inject Global CSS + Custom Nav Styling
 # ---------------------------------------------------------------------------
 st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
 
+# Make sidebar nav buttons look exactly like the image (link-style, centered)
+st.markdown("""
+<style>
+/* Remove button borders and backgrounds from sidebar nav buttons */
+section[data-testid="stSidebar"] .stButton > button {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: #8BA3C7 !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px !important;
+    padding: 10px 0px !important;
+    width: 100% !important;
+    text-align: center !important;
+    box-shadow: none !important;
+    transition: color 0.2s ease !important;
+    margin: 2px 0 !important;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+    color: #00D4FF !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+/* Active page — highlighted cyan text, no background */
+section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    color: #00D4FF !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+section[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+    color: #00D4FF !important;
+    background: transparent !important;
+}
+/* Remove focus outline */
+section[data-testid="stSidebar"] .stButton > button:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ---------------------------------------------------------------------------
-# Navigation Config
+# Page Runners — each loads its module and calls render()
 # ---------------------------------------------------------------------------
-NAV_PAGES = [
-    ("Home",               "pages/1_home.py",             "◎"),
-    ("Prediction",         "pages/2_prediction.py",       "⚡"),
-    ("Evaluation",         "pages/3_evaluation.py",       "◈"),
-    ("Visual Analytics",   "pages/4_visual_analytics.py", "◉"),
-    ("Prediction History", "pages/5_history.py",          "◷"),
-    ("Downloads",          "pages/6_downloads.py",        "↓"),
-    ("About",              "pages/7_about.py",            "◌"),
+def _make_runner(rel_path: str):
+    """Return a callable that loads the page module and calls render()."""
+    def _runner():
+        abs_path = os.path.join(DASHBOARD_DIR, rel_path)
+        spec = importlib.util.spec_from_file_location("_page_module", abs_path)
+        mod  = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.render()
+    return _runner
+
+# ---------------------------------------------------------------------------
+# Define Pages for st.navigation()
+# Each page gets its own URL — browser Back/Forward work natively
+# ---------------------------------------------------------------------------
+NAV_CONFIG = [
+    ("Home",               "pages/1_home.py",             "◎",  "home"),
+    ("Prediction",         "pages/2_prediction.py",       "⚡", "prediction"),
+    ("Evaluation",         "pages/3_evaluation.py",       "◈",  "evaluation"),
+    ("Visual Analytics",   "pages/4_visual_analytics.py", "◉",  "visual_analytics"),
+    ("Prediction History", "pages/5_history.py",          "◷",  "history"),
+    ("Downloads",          "pages/6_downloads.py",        "↓",  "downloads"),
+    ("About",              "pages/7_about.py",            "◌",  "about"),
 ]
 
+nav_pages = [
+    st.Page(
+        _make_runner(path),
+        title=name,
+        icon=icon,
+        url_path=url,
+    )
+    for name, path, icon, url in NAV_CONFIG
+]
+
+# Use st.navigation with position="hidden" so we draw our own sidebar
+pg = st.navigation(nav_pages, position="hidden")
+
 # ---------------------------------------------------------------------------
-# Sidebar
+# Sidebar — styled exactly like the reference image
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    # Logo area
+    # Logo / branding
     st.markdown(sidebar_logo(), unsafe_allow_html=True)
 
+    # "NAVIGATION" label
     st.markdown("""
-    <div style="padding:12px 20px 4px;">
+    <div style="padding:12px 20px 8px;">
         <div style="font-size:9px;color:#1A3A5C;text-transform:uppercase;
                     letter-spacing:2px;font-weight:700;">Navigation</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Default to Home
-    if "current_page" not in st.session_state:
-        st.session_state["current_page"] = "Home"
-
-    for page_name, _, icon in NAV_PAGES:
-        is_active = st.session_state["current_page"] == page_name
-        border_c  = "#00D4FF" if is_active else "transparent"
-        bg_c      = "rgba(0,212,255,0.08)" if is_active else "transparent"
-        text_c    = "#00D4FF" if is_active else "#8BA3C7"
-
-        # Render styled button via HTML label + Streamlit button
+    # Nav buttons — look like the image (centered link-style)
+    for page in nav_pages:
+        is_active = pg.title == page.title
         btn = st.button(
-            f"{icon}  {page_name}",
-            key=f"nav_btn_{page_name}",
+            f"{page.icon}  {page.title}",
+            key=f"nav_{page.title}",
             use_container_width=True,
             type="primary" if is_active else "secondary",
         )
-
         if btn:
-            st.session_state["current_page"] = page_name
-            st.rerun()
+            st.switch_page(page)
 
-    # System Status block at bottom of sidebar
+    # System Status
     st.markdown("<br>" * 2, unsafe_allow_html=True)
     st.markdown("""
     <div style="border-top:1px solid #1A3A5C;padding:16px 20px 0;">
@@ -126,8 +175,8 @@ with st.sidebar:
         ("Metrics",        os.path.exists(METRICS_CSV)),
     ]
     for lbl, ok in _checks:
-        dot_c  = "#00FF9F" if ok else "#FF3860"
-        state  = "OK" if ok else "MISSING"
+        dot_c = "#00FF9F" if ok else "#FF3860"
+        state = "OK" if ok else "MISSING"
         st.markdown(f"""
         <div style="display:flex;align-items:center;gap:8px;padding:3px 0;">
             <span style="width:6px;height:6px;border-radius:50%;
@@ -150,14 +199,6 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Page Routing — dynamically load the selected page file
+# Run the selected page
 # ---------------------------------------------------------------------------
-current = st.session_state.get("current_page", "Home")
-
-page_file = next(
-    (f for name, f, _ in NAV_PAGES if name == current),
-    "pages/1_home.py"
-)
-
-page_mod = _load_page(page_file)
-page_mod.render()
+pg.run()
