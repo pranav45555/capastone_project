@@ -3,6 +3,13 @@ PAGE 2 — Prediction
 Upload TLE → Run Prediction → Display Results
 """
 
+# Check if TensorFlow is available (not installed on Streamlit Cloud)
+try:
+    import tensorflow as _tf  # noqa: F401
+    _TF_AVAILABLE = True
+except ImportError:
+    _TF_AVAILABLE = False
+
 import os
 import time
 import tempfile
@@ -122,9 +129,30 @@ def render():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # -----------------------------------------------------------------------
+    # Cloud Mode Banner (when TensorFlow not available)
+    # -----------------------------------------------------------------------
+    if not _TF_AVAILABLE:
+        st.markdown("""
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.3);
+                    border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:20px;">☁️</span>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#00D4FF;">Cloud Deployment Mode</div>
+                    <div style="font-size:12px;color:#8BA3C7;margin-top:4px;">
+                        Live prediction requires TensorFlow (not installed on cloud). 
+                        Click <strong style="color:#00FF9F;">"Load Last Results"</strong> below to view 
+                        pre-computed results from 15,299 satellites. All charts, metrics, and data are available.
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # -----------------------------------------------------------------------
     # Run Button
     # -----------------------------------------------------------------------
-    can_run = (tle_source != "Upload Custom TLE") or (uploaded_file is not None)
+    can_run = _TF_AVAILABLE and ((tle_source != "Upload Custom TLE") or (uploaded_file is not None))
 
     col_run, col_load, _ = st.columns([1.2, 1, 3])
     with col_run:
@@ -132,12 +160,14 @@ def render():
             "Run Prediction",
             disabled=not can_run,
             type="primary",
-            key="run_prediction_btn"
+            key="run_prediction_btn",
+            help="Requires TensorFlow (available when running locally)" if not _TF_AVAILABLE else None
         )
     with col_load:
         load_clicked = st.button(
             "Load Last Results",
-            key="load_results_btn"
+            key="load_results_btn",
+            type="primary" if not _TF_AVAILABLE else "secondary"
         )
 
     # -----------------------------------------------------------------------
