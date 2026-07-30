@@ -108,14 +108,15 @@ def _make_runner(rel_path: str):
 # Each page gets its own URL — browser Back/Forward work natively
 # ---------------------------------------------------------------------------
 NAV_CONFIG = [
-    ("Home",               "pages/1_home.py",             "◎",  "home"),
-    ("Prediction",         "pages/2_prediction.py",       "⚡", "prediction"),
-    ("Evaluation",         "pages/3_evaluation.py",       "◈",  "evaluation"),
-    ("Visual Analytics",   "pages/4_visual_analytics.py", "◉",  "visual_analytics"),
-    ("Prediction History", "pages/5_history.py",          "◷",  "history"),
-    ("Downloads",          "pages/6_downloads.py",        "↓",  "downloads"),
-    ("About",              "pages/7_about.py",            "◌",  "about"),
+    ("Home",               "pages/1_home.py",             "🏠",  "home"),
+    ("Prediction",         "pages/2_prediction.py",       "⚡",  "prediction"),
+    ("Evaluation",         "pages/3_evaluation.py",       "📊",  "evaluation"),
+    ("Visual Analytics",   "pages/4_visual_analytics.py", "📈",  "visual_analytics"),
+    ("Prediction History", "pages/5_history.py",          "🕐",  "history"),
+    ("Downloads",          "pages/6_downloads.py",        "📥",  "downloads"),
+    ("About",              "pages/7_about.py",            "ℹ️",  "about"),
 ]
+
 
 nav_pages = [
     st.Page(
