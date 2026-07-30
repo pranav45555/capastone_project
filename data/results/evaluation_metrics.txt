@@ -1,0 +1,57 @@
+======================================================================
+  CollideX -- Model Evaluation Summary
+  Generated  : 2026-06-30 08:35:01 UTC
+======================================================================
+
+-- DATASET INFORMATION ---------------------------------------------
+  Dataset File     : hybrid_dataset.csv
+  Total Samples    : 162,623
+  Feature Count    : 33
+  Train Samples    : 130,098  (80.0%)
+  Test  Samples    : 32,525  (20.0%)
+  Target Classes   : 0=Low, 1=Medium, 2=High
+
+-- MODEL INFORMATION -----------------------------------------------
+  Model Name       : Hybrid Random Forest Classifier
+  Model File       : collision_model_hybrid.pkl
+  sklearn Version  : 1.7.1
+  Number of Trees  : 200
+  Max Depth        : 12
+  Min Samples Split: 5
+  Min Samples Leaf : 2
+  Class Weight     : balanced
+  Max Features     : sqrt
+  Random State     : 42
+  n_jobs           : -1
+
+-- PERFORMANCE METRICS ---------------------------------------------
+  Accuracy                   : 0.999939
+  Balanced Accuracy          : 0.999972
+  Matthews Corr. Coef.       : 0.999852
+  Cohen Kappa                : 0.999852
+  Log Loss                   : 0.012137
+  ROC-AUC (macro OVR)        : 1.000000
+  ROC-AUC (weighted OVR)     : 1.000000
+
+-- PER-CLASS METRICS -----------------------------------------------
+  Class       Precision     Recall   F1-Score    Support
+  ----------------------------------------------
+  Low          1.000000   0.999917   0.999958     23,976
+  Medium       0.999682   1.000000   0.999841      6,288
+  High         1.000000   1.000000   1.000000      2,261
+
+-- MACRO / WEIGHTED AVERAGES ---------------------------------------
+  Precision (macro)          : 0.999894
+  Recall    (macro)          : 0.999972
+  F1-Score  (macro)          : 0.999933
+  Precision (weighted)       : 0.999939
+  Recall    (weighted)       : 0.999939
+  F1-Score  (weighted)       : 0.999939
+
+-- INFERENCE TIMING ------------------------------------------------
+  Prediction  (total)        : 128.91 ms
+  Prediction  (per sample)   : 0.003963 ms
+  Inference   (total)        : 251.17 ms
+  Inference   (per sample)   : 0.007722 ms
+
+======================================================================

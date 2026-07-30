@@ -1,0 +1,30 @@
+Metric,Value
+Accuracy,0.99993851
+Balanced Accuracy,0.99997219
+Matthews Corr. Coef. (MCC),0.99985164
+Cohen Kappa,0.99985162
+Log Loss,0.0121366
+ROC-AUC (macro OVR),1.0
+ROC-AUC (weighted OVR),1.0
+Precision (macro),0.99989401
+Recall (macro),0.99997219
+F1-Score (macro),0.99993309
+Precision (weighted),0.99993853
+Recall (weighted),0.99993851
+F1-Score (weighted),0.99993851
+Precision (Low),1.0
+Precision (Medium),0.99968203
+Precision (High),1.0
+Recall (Low),0.99991658
+Recall (Medium),1.0
+Recall (High),1.0
+F1-Score (Low),0.99995829
+F1-Score (Medium),0.99984099
+F1-Score (High),1.0
+Support (Low),23976.0
+Support (Medium),6288.0
+Support (High),2261.0
+Prediction Time Total (ms),128.9118
+Prediction Time / Sample (ms),0.00396347
+Inference Time Total (ms),251.1696
+Inference Time / Sample (ms),0.00772236

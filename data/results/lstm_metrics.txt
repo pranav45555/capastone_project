@@ -1,0 +1,38 @@
+======================================================================
+  CollideX -- LSTM Trajectory Model Evaluation
+  Generated : 2026-06-30 08:35:03 UTC
+======================================================================
+
+-- MODEL ARCHITECTURE ----------------------------------------------
+  Type         : Sequential LSTM (Encoder -> Regressor)
+  Layers       : LSTM(64) -> Dropout(0.2) -> LSTM(32) -> Dropout(0.1)
+                 -> Dense(16, relu) -> Dense(6)
+  Input Shape  : (3, 6)  [h=1,6,12 × {x,y,z,vx,vy,vz}]
+  Output Shape : (6,)    [predicted h=24 state vector]
+  Model File   : lstm_trajectory_model.keras
+
+-- DATASET ---------------------------------------------------------
+  LSTM Dataset : lstm_dataset.csv
+  Total Seqs   : 15,298
+  Test Split   : 2,296  (15%)
+
+-- REGRESSION METRICS (NORMALIZED SCALE) ---------------------------
+  MSE          : 0.01046080
+  RMSE         : 0.10227806
+  MAE          : 0.06892097
+  R² Score     : 0.84910235
+  MAPE         : 36.2026 %
+
+-- PER-VARIABLE MAE (NORMALIZED) -----------------------------------
+  x_km         : 0.07532978
+  y_km         : 0.07188637
+  z_km         : 0.06312711
+  vx_km_s      : 0.06390844
+  vy_km_s      : 0.07296597
+  vz_km_s      : 0.06630812
+
+-- INFERENCE TIMING ------------------------------------------------
+  Total inference time  : 0.4064 s
+  Time per sample       : 0.177023 ms
+
+======================================================================
